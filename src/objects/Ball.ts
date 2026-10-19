@@ -420,10 +420,11 @@ export class Ball extends Phaser.GameObjects.Container {
       }
 
       if (hitWallRight) {
-        // Khi bóng trong nước chạm mép sàn gạch ngang bằng:
+        // Khi bóng phồng nổi trên mặt nước chạm mép sàn gạch ngang bằng:
         // Tự động nâng nhẹ bóng lên mặt sàn bờ ao để thoát ra êm ái
         if (
           this.isInWater &&
+          this.form === 'big' &&
           !isSolid(rightTileX, topTileY) &&
           !isSolid(rightTileX, bottomTileY - 1) &&
           this.y <= bottomTileY * tileSize
@@ -453,6 +454,7 @@ export class Ball extends Phaser.GameObjects.Container {
         // Tương tự cho mép bờ bên trái
         if (
           this.isInWater &&
+          this.form === 'big' &&
           !isSolid(leftTileX, topTileY) &&
           !isSolid(leftTileX, bottomTileY - 1) &&
           this.y <= bottomTileY * tileSize
@@ -534,15 +536,9 @@ export class Ball extends Phaser.GameObjects.Container {
         const isJumpRequested = input.jump || this.jumpBufferTimer > 0;
         if (isJumpRequested) {
           if (this.isInWater) {
-            // Khi ở trong nước: Quẫy/nhảy trong nước theo đúng hằng số vật lý WATER_JUMP_VELOCITY
-            const waterJumpVelocity =
-              this.form === 'big'
-                ? PHYSICS_CONFIG.WATER_JUMP_VELOCITY_BIG
-                : PHYSICS_CONFIG.WATER_JUMP_VELOCITY_SMALL;
-            this.vy = -waterJumpVelocity;
+            // Khi ở trong nước: Tuyệt đối KHÔNG thể nhảy (theo luật AGENTS.md), chỉ lăn trái/phải
+            this.vy = 0;
             this.jumpBufferTimer = 0;
-            this.onGround = false;
-            AudioManager.getInstance().playJump();
           } else {
             // Trên cạn: Nhảy bình thường theo dạng bóng
             const jumpVelocity =

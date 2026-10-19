@@ -60,6 +60,8 @@ public/assets/
 8. Mọi thao tác đọc/ghi localStorage phải được bọc trong block try/catch để tránh crash khi ở chế độ ẩn danh hoặc bị chặn cookie/storage.
 9. Bắt buộc chạy `npm run build` thành công trước khi báo hoàn thành mỗi task.
 10. Quy định Git: Mọi thay đổi (sau khi người dùng kiểm tra test đạt yêu cầu) CHỈ ĐƯỢC COMMIT ở local, TUYỆT ĐỐI KHÔNG ĐƯỢC TỰ Ý PUSH lên GitHub. Chỉ thực hiện `git push` khi có lệnh rõ ràng từ người dùng.
+11. Quy tắc nước ('~'): KHÔNG ĐƯỢC thêm cơ chế nhảy ở dưới nước. Quả bóng ở dưới nước chỉ có thể di chuyển sang trái hoặc phải. Bóng to ở dưới nước thì auto nổi, còn bóng nhỏ thì auto chìm. Chỉ được thêm ô bơm phồng ('I') ở dưới nước để bóng phồng to và nổi lên bờ ao.
+
 
 ## Ký hiệu level (mảng ký tự)
 
