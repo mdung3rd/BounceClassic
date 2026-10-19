@@ -2,6 +2,7 @@
 import Phaser from 'phaser';
 import { PHYSICS_CONFIG } from '../config/physics';
 import { LevelData } from '../levels/types';
+import { AudioManager } from '../audio/AudioManager';
 
 /**
  * Trạng thái phím điều khiển quả bóng
@@ -526,6 +527,9 @@ export class Ball extends Phaser.GameObjects.Container {
       }
 
       if (hitFloor) {
+        const wasInAir = !this.onGround;
+        const impactVy = this.vy;
+
         this.y = floorTileY * tileSize - currentRadius;
         this.onGround = true;
 
@@ -544,9 +548,14 @@ export class Ball extends Phaser.GameObjects.Container {
             this.vy = -jumpVelocity;
             this.jumpBufferTimer = 0;
             this.onGround = false;
+            AudioManager.getInstance().playJump();
           }
         } else {
           this.vy = 0;
+          // Phát âm thanh chạm sàn khi rơi từ trên không xuống
+          if (wasInAir && impactVy > 30) {
+            AudioManager.getInstance().playBounce(this.form);
+          }
         }
       } else {
         this.onGround = false;
@@ -574,6 +583,9 @@ export class Ball extends Phaser.GameObjects.Container {
       this.y = currentRadius;
       this.vy = 0;
     } else if (this.y + currentRadius > level.heightPx) {
+      if (!this.onGround && this.vy > 30) {
+        AudioManager.getInstance().playBounce(this.form);
+      }
       this.y = level.heightPx - currentRadius;
       this.vy = 0;
       this.onGround = true;

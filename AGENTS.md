@@ -21,6 +21,7 @@ Quả bóng đỏ lăn trên sàn, chỉ nhảy khi bấm phím (chuẩn Nokia);
 
 src/
 config/physics.ts <- MỌI hằng số vật lý
+audio/ <- AudioManager.ts (Web Audio chiptune synth, singleton, phím N mute)
 scenes/ <- HelpScene, MenuScene, LevelSelectScene, GameScene...
 objects/ <- Ball, Ring, Spike, Checkpoint, Exit, HUD, ObjectManager...
 levels/ <- types.ts, level1.ts, index.ts (export mảng LEVELS)...
@@ -34,6 +35,7 @@ public/assets/
 - Chơi lại màn: Phím R
 - Tạm dừng: Phím P hoặc Esc (khi đang chơi)
 - Về Menu chính: Phím M (hoạt động khi đang chơi, tạm dừng, game over hoặc level complete)
+- Bật/tắt âm thanh (Mute): Phím N (hoạt động ở mọi màn hình, có icon loa nhỏ)
 - Điều hướng Menu / Chọn Level: Mũi tên (hoặc WASD), Enter / Space để chọn, Esc để quay lại Menu
 - Thắng màn (Level Complete): Enter để sang level kế (hoặc về menu nếu là level cuối), R để chơi lại màn
 
@@ -90,4 +92,5 @@ public/assets/
 - [x] Prompt 4: Phồng/xẹp, nước, kẻ địch, thanh nảy
 - [x] Prompt 5: Tạm dừng + phím tắt + màn hình hướng dẫn điều khiển
 - [x] Prompt 6: Menu chính, hệ thống chọn level, lưu tiến trình & điểm cao (save.ts), phím tắt M
-- [ ] Prompt 7: Hoàn thiện (âm thanh, thêm level)
+- [x] Prompt 7A: Hệ thống âm thanh Web Audio (AudioManager.ts, chiptune synth, phím N, icon loa mute)
+- [ ] Prompt 7B: Thêm level mới

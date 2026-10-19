@@ -13,6 +13,7 @@ import { Deflater } from './Deflater';
 import { Bouncer } from './Bouncer';
 import { Enemy } from './Enemy';
 import { Water } from './Water';
+import { AudioManager } from '../audio/AudioManager';
 
 export interface ObjectManagerEvents {
   onStatsChange?: (lives: number, remainingRings: number, score: number) => void;
@@ -207,9 +208,11 @@ export class ObjectManager {
       if (!ring.isCollected && ring.checkCollision(ball.x, ball.y, ball.radius)) {
         ring.collect();
         this.score += PHYSICS_CONFIG.POINTS_PER_RING;
+        AudioManager.getInstance().playRing();
 
         if (this.remainingRings === 0 && this.exitGate) {
           this.exitGate.open();
+          AudioManager.getInstance().playExitOpen();
         }
 
         this.notifyStatsChange();
@@ -239,6 +242,7 @@ export class ObjectManager {
     for (const bouncer of this.bouncers) {
       if (bouncer.checkCollision(ball)) {
         bouncer.trigger(ball);
+        AudioManager.getInstance().playSpring();
       }
     }
 
@@ -249,6 +253,7 @@ export class ObjectManager {
           const success = ball.setForm('big', this.level);
           if (success) {
             pump.triggerEffect();
+            AudioManager.getInstance().playInflate();
           }
         }
       }
@@ -261,6 +266,7 @@ export class ObjectManager {
           const success = ball.setForm('small', this.level);
           if (success) {
             deflater.triggerEffect();
+            AudioManager.getInstance().playDeflate();
           }
         }
       }
@@ -269,8 +275,10 @@ export class ObjectManager {
     // 8. Kiểm tra va chạm với Checkpoint ('C')
     for (const checkpoint of this.checkpoints) {
       if (!checkpoint.isActivated && checkpoint.checkCollision(ball.x, ball.y, ball.radius)) {
-        checkpoint.activate();
-        this.respawnPoint = { x: checkpoint.x, y: checkpoint.y };
+        if (checkpoint.activate()) {
+          this.respawnPoint = { x: checkpoint.x, y: checkpoint.y };
+          AudioManager.getInstance().playCheckpoint();
+        }
       }
     }
 
@@ -290,6 +298,7 @@ export class ObjectManager {
    */
   private handleBallDeath(ball: Ball): void {
     ball.kill();
+    AudioManager.getInstance().playDie();
 
     new ExplosionEffect(this.scene, ball.x, ball.y, () => {
       this.lives -= 1;

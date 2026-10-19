@@ -1,6 +1,7 @@
 // src/scenes/HelpScene.ts
 import Phaser from 'phaser';
 import { PHYSICS_CONFIG } from '../config/physics';
+import { AudioManager } from '../audio/AudioManager';
 
 /**
  * Màn hình hướng dẫn điều khiển (HelpScene)
@@ -102,9 +103,10 @@ export class HelpScene extends Phaser.Scene {
       { action: 'Tạm dừng',    keys: 'Phím [P]  hoặc  [ESC]' },
       { action: 'Chơi lại',    keys: 'Phím [R]' },
       { action: 'Về Menu',     keys: 'Phím [M]' },
+      { action: 'Âm thanh',    keys: 'Phím [N] (Bật / Tắt)' },
     ];
 
-    let rowY = 130;
+    let rowY = 126;
     for (const item of controls) {
       // Nhãn hành động
       this.add.text(65, rowY, item.action, {
@@ -127,7 +129,7 @@ export class HelpScene extends Phaser.Scene {
         color: '#cbd5e1',
       });
 
-      rowY += 22;
+      rowY += 20;
     }
 
     // 7. Gợi ý bắt đầu nhấp nháy
@@ -157,6 +159,7 @@ export class HelpScene extends Phaser.Scene {
     const startGame = () => {
       if (hasStarted) return;
       hasStarted = true;
+      AudioManager.getInstance().playMenuSelect();
       this.scene.start('MenuScene');
     };
 

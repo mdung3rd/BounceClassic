@@ -3,6 +3,7 @@ import Phaser from 'phaser';
 import { PHYSICS_CONFIG } from '../config/physics';
 import { isLevelUnlocked, getHighScore } from '../utils/save';
 import { LEVELS } from '../levels';
+import { AudioManager } from '../audio/AudioManager';
 
 interface LevelSlot {
   index: number;
@@ -54,6 +55,10 @@ export class LevelSelectScene extends Phaser.Scene {
   private keyEnter?: Phaser.Input.Keyboard.Key;
   private keySpace?: Phaser.Input.Keyboard.Key;
   private keyEsc?: Phaser.Input.Keyboard.Key;
+  private keyN?: Phaser.Input.Keyboard.Key;
+
+  private speakerGraphics!: Phaser.GameObjects.Graphics;
+  private unsubscribeMute?: () => void;
 
   constructor() {
     super({ key: 'LevelSelectScene' });
@@ -80,6 +85,9 @@ export class LevelSelectScene extends Phaser.Scene {
 
     // 6. Gợi ý điều khiển dưới chân màn hình
     this.createFooter(width, height);
+
+    // 6.1. Icon loa nhỏ báo trạng thái mute ở góc phải trên
+    this.createSpeakerIcon(width);
 
     // 7. Thiết lập phím điều khiển
     this.setupControls();
@@ -213,8 +221,11 @@ export class LevelSelectScene extends Phaser.Scene {
       // Xử lý click chuột vào ô
       const slotIndex = i;
       bgBox.on('pointerover', () => {
-        this.selectedIndex = slotIndex;
-        this.updateSelection();
+        if (this.selectedIndex !== slotIndex) {
+          this.selectedIndex = slotIndex;
+          this.updateSelection();
+          AudioManager.getInstance().playMenuMove();
+        }
       });
 
       bgBox.on('pointerdown', () => {
@@ -223,6 +234,7 @@ export class LevelSelectScene extends Phaser.Scene {
         } else {
           this.selectedIndex = slotIndex;
           this.updateSelection();
+          AudioManager.getInstance().playMenuMove();
         }
       });
 
@@ -328,7 +340,7 @@ export class LevelSelectScene extends Phaser.Scene {
     const footerText = this.add.text(
       width / 2,
       height - 20,
-      '[MŨI TÊN / WASD]: Di chuyển  |  [ENTER]: Chọn  |  [ESC]: Quay lại',
+      '[MŨI TÊN / WASD]: Di chuyển  |  [ENTER]: Chọn  |  [N]: Âm thanh  |  [ESC]: Quay lại',
       {
         fontFamily: 'monospace',
         fontSize: '9px',
@@ -336,6 +348,69 @@ export class LevelSelectScene extends Phaser.Scene {
       }
     );
     footerText.setOrigin(0.5);
+  }
+
+  /**
+   * Tạo icon loa nhỏ ở góc trên bên phải màn hình
+   */
+  private createSpeakerIcon(width: number): void {
+    const speakerContainer = this.add.container(width - 18, 14);
+    speakerContainer.setDepth(100);
+
+    this.speakerGraphics = this.add.graphics();
+    speakerContainer.add(this.speakerGraphics);
+
+    const hitZone = this.add.zone(0, 0, 22, 18);
+    hitZone.setInteractive({ useHandCursor: true });
+    hitZone.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      pointer.event.stopPropagation();
+      AudioManager.getInstance().toggleMute();
+    });
+    speakerContainer.add(hitZone);
+
+    const audioManager = AudioManager.getInstance();
+    this.updateSpeakerIcon(audioManager.getMuted());
+
+    this.unsubscribeMute = audioManager.onMuteChange((muted) => {
+      this.updateSpeakerIcon(muted);
+    });
+
+    this.events.once('shutdown', () => {
+      if (this.unsubscribeMute) {
+        this.unsubscribeMute();
+      }
+    });
+  }
+
+  /**
+   * Cập nhật hình vẽ icon loa theo trạng thái mute
+   */
+  private updateSpeakerIcon(isMuted: boolean): void {
+    this.speakerGraphics.clear();
+
+    if (!isMuted) {
+      this.speakerGraphics.fillStyle(0x4ade80, 1);
+      this.speakerGraphics.fillRect(-5, -2.5, 3, 5);
+      this.speakerGraphics.fillTriangle(-2, -2.5, 2, -5, 2, 5);
+      this.speakerGraphics.fillRect(-2, -2.5, 1, 5);
+
+      this.speakerGraphics.lineStyle(1.2, 0x4ade80, 0.9);
+      this.speakerGraphics.beginPath();
+      this.speakerGraphics.arc(2, 0, 3.5, -Phaser.Math.DEG_TO_RAD * 45, Phaser.Math.DEG_TO_RAD * 45, false);
+      this.speakerGraphics.strokePath();
+
+      this.speakerGraphics.beginPath();
+      this.speakerGraphics.arc(2, 0, 5.5, -Phaser.Math.DEG_TO_RAD * 45, Phaser.Math.DEG_TO_RAD * 45, false);
+      this.speakerGraphics.strokePath();
+    } else {
+      this.speakerGraphics.fillStyle(0x64748b, 0.85);
+      this.speakerGraphics.fillRect(-5, -2.5, 3, 5);
+      this.speakerGraphics.fillTriangle(-2, -2.5, 2, -5, 2, 5);
+      this.speakerGraphics.fillRect(-2, -2.5, 1, 5);
+
+      this.speakerGraphics.lineStyle(1.5, 0xef4444, 1);
+      this.speakerGraphics.lineBetween(-5, -5, 4, 5);
+    }
   }
 
   /**
@@ -356,6 +431,7 @@ export class LevelSelectScene extends Phaser.Scene {
     this.keyEnter = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
     this.keySpace = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
     this.keyEsc = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
+    this.keyN = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.N);
   }
 
   /**
@@ -417,6 +493,7 @@ export class LevelSelectScene extends Phaser.Scene {
     if (!selectedSlot) return;
 
     if (selectedSlot.isUnlocked) {
+      AudioManager.getInstance().playMenuSelect();
       this.scene.start('GameScene', { levelIndex: selectedSlot.index });
     } else {
       // Hiệu ứng cảnh báo khi chọn level bị khoá
@@ -428,6 +505,11 @@ export class LevelSelectScene extends Phaser.Scene {
     const currentSlot = this.slots[this.selectedIndex];
     if (!currentSlot) return;
 
+    // 0. Phím N bật/tắt tiếng (Mute)
+    if (this.keyN && Phaser.Input.Keyboard.JustDown(this.keyN)) {
+      AudioManager.getInstance().toggleMute();
+    }
+
     // 1. Phím Trái (LEFT / A)
     if (
       (this.keyLeft && Phaser.Input.Keyboard.JustDown(this.keyLeft)) ||
@@ -436,6 +518,7 @@ export class LevelSelectScene extends Phaser.Scene {
       if (currentSlot.col > 0) {
         this.selectedIndex -= 1;
         this.updateSelection();
+        AudioManager.getInstance().playMenuMove();
       }
     }
 
@@ -447,6 +530,7 @@ export class LevelSelectScene extends Phaser.Scene {
       if (currentSlot.col < LevelSelectScene.COLS - 1 && this.selectedIndex < this.slots.length - 1) {
         this.selectedIndex += 1;
         this.updateSelection();
+        AudioManager.getInstance().playMenuMove();
       }
     }
 
@@ -458,6 +542,7 @@ export class LevelSelectScene extends Phaser.Scene {
       if (currentSlot.row > 0) {
         this.selectedIndex -= LevelSelectScene.COLS;
         this.updateSelection();
+        AudioManager.getInstance().playMenuMove();
       }
     }
 
@@ -472,6 +557,7 @@ export class LevelSelectScene extends Phaser.Scene {
       ) {
         this.selectedIndex += LevelSelectScene.COLS;
         this.updateSelection();
+        AudioManager.getInstance().playMenuMove();
       }
     }
 

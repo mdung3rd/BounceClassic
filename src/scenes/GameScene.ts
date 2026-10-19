@@ -7,6 +7,7 @@ import { LevelData } from '../levels/types';
 import { ObjectManager } from '../objects/ObjectManager';
 import { HUD } from '../objects/HUD';
 import { saveLevelProgress } from '../utils/save';
+import { AudioManager } from '../audio/AudioManager';
 
 export class GameScene extends Phaser.Scene {
   // Index của level hiện tại trong mảng LEVELS
@@ -55,6 +56,7 @@ export class GameScene extends Phaser.Scene {
   private keyR?: Phaser.Input.Keyboard.Key;
   private keyB?: Phaser.Input.Keyboard.Key;
   private keyM?: Phaser.Input.Keyboard.Key;
+  private keyN?: Phaser.Input.Keyboard.Key;
   private keyEnter?: Phaser.Input.Keyboard.Key;
 
   // Trạng thái kết thúc game
@@ -81,6 +83,7 @@ export class GameScene extends Phaser.Scene {
     this.isPaused = false;
     this.time.paused = false;
     this.accumulator = 0;
+    AudioManager.getInstance().setPaused(false);
 
     // 1. Vẽ nền bao phủ toàn bộ kích thước của level (40 ô x 20 ô)
     this.createBackground();
@@ -135,6 +138,7 @@ export class GameScene extends Phaser.Scene {
       this.keyR = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R);
       this.keyB = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.B);
       this.keyM = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.M);
+      this.keyN = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.N);
       this.keyEnter = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
     }
 
@@ -286,7 +290,7 @@ export class GameScene extends Phaser.Scene {
     const hint = this.add.text(
       PHYSICS_CONFIG.LOGIC_WIDTH / 2,
       PHYSICS_CONFIG.LOGIC_HEIGHT / 2 + 20,
-      'P/Esc: tiếp tục | R: chơi lại | M: về menu',
+      'P/Esc: tiếp tục | R: chơi lại | M: menu | N: âm thanh',
       {
         fontFamily: 'monospace',
         fontSize: '10px',
@@ -302,6 +306,7 @@ export class GameScene extends Phaser.Scene {
    */
   private togglePause(): void {
     this.isPaused = !this.isPaused;
+    AudioManager.getInstance().setPaused(this.isPaused);
 
     if (this.isPaused) {
       this.time.paused = true;
@@ -364,6 +369,11 @@ export class GameScene extends Phaser.Scene {
     if (this.keyM && Phaser.Input.Keyboard.JustDown(this.keyM)) {
       this.goToMenu();
       return;
+    }
+
+    // 0.1. Phím N: Bật/tắt âm thanh (Mute/Unmute)
+    if (this.keyN && Phaser.Input.Keyboard.JustDown(this.keyN)) {
+      AudioManager.getInstance().toggleMute();
     }
 
     // 1. Phím R: chơi lại màn hiện tại từ đầu (hoạt động khi đang chơi, tạm dừng, hoặc Game Over / Level Complete)
@@ -497,6 +507,7 @@ export class GameScene extends Phaser.Scene {
    */
   private handleGameOver(): void {
     this.isGameOver = true;
+    AudioManager.getInstance().playGameOver();
 
     const overlay = this.add.container(0, 0);
     overlay.setScrollFactor(0);
@@ -563,6 +574,7 @@ export class GameScene extends Phaser.Scene {
    */
   private handleLevelComplete(): void {
     this.isLevelComplete = true;
+    AudioManager.getInstance().playWin();
 
     // Lưu điểm và mở khoá level kế tiếp
     const score = this.objectManager.score;
@@ -660,6 +672,7 @@ export class GameScene extends Phaser.Scene {
       this.tweens.resumeAll();
       this.isPaused = false;
     }
+    AudioManager.getInstance().setPaused(false);
     this.scene.restart({ levelIndex: this.levelIndex });
   }
 
@@ -672,6 +685,7 @@ export class GameScene extends Phaser.Scene {
       this.tweens.resumeAll();
       this.isPaused = false;
     }
+    AudioManager.getInstance().setPaused(false);
     this.scene.start('MenuScene');
   }
 }

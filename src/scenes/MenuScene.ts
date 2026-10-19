@@ -3,6 +3,7 @@ import Phaser from 'phaser';
 import { PHYSICS_CONFIG } from '../config/physics';
 import { getHighestUnlockedLevel } from '../utils/save';
 import { LEVELS } from '../levels';
+import { AudioManager } from '../audio/AudioManager';
 
 interface MenuItem {
   title: string;
@@ -31,6 +32,10 @@ export class MenuScene extends Phaser.Scene {
   private keyEnter?: Phaser.Input.Keyboard.Key;
   private keySpace?: Phaser.Input.Keyboard.Key;
   private keyH?: Phaser.Input.Keyboard.Key;
+  private keyN?: Phaser.Input.Keyboard.Key;
+
+  private speakerGraphics!: Phaser.GameObjects.Graphics;
+  private unsubscribeMute?: () => void;
 
   constructor() {
     super({ key: 'MenuScene' });
@@ -54,6 +59,9 @@ export class MenuScene extends Phaser.Scene {
 
     // 5. Gợi ý điều khiển dưới chân màn hình
     this.createFooter(width, height);
+
+    // 5.1. Icon loa nhỏ báo trạng thái mute ở góc phải trên
+    this.createSpeakerIcon(width);
 
     // 6. Đăng ký phím điều hướng
     this.setupControls();
@@ -191,8 +199,11 @@ export class MenuScene extends Phaser.Scene {
 
       // Tương tác chuột
       bgBox.on('pointerover', () => {
-        this.selectedIndex = index;
-        this.updateSelection();
+        if (this.selectedIndex !== index) {
+          this.selectedIndex = index;
+          this.updateSelection();
+          AudioManager.getInstance().playMenuMove();
+        }
       });
 
       bgBox.on('pointerdown', () => {
@@ -238,7 +249,7 @@ export class MenuScene extends Phaser.Scene {
     const hint = this.add.text(
       width / 2,
       height - 30,
-      '[↑/↓]: Chọn  |  [ENTER / SPACE]: Vào  |  [H]: Hướng dẫn',
+      '[↑/↓]: Chọn  |  [ENTER / SPACE]: Vào  |  [N]: Âm thanh  |  [H]: Hướng dẫn',
       {
         fontFamily: 'monospace',
         fontSize: '10px',
@@ -258,6 +269,69 @@ export class MenuScene extends Phaser.Scene {
   }
 
   /**
+   * Tạo icon loa nhỏ ở góc trên bên phải màn hình Menu
+   */
+  private createSpeakerIcon(width: number): void {
+    const speakerContainer = this.add.container(width - 18, 14);
+    speakerContainer.setDepth(100);
+
+    this.speakerGraphics = this.add.graphics();
+    speakerContainer.add(this.speakerGraphics);
+
+    const hitZone = this.add.zone(0, 0, 22, 18);
+    hitZone.setInteractive({ useHandCursor: true });
+    hitZone.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      pointer.event.stopPropagation();
+      AudioManager.getInstance().toggleMute();
+    });
+    speakerContainer.add(hitZone);
+
+    const audioManager = AudioManager.getInstance();
+    this.updateSpeakerIcon(audioManager.getMuted());
+
+    this.unsubscribeMute = audioManager.onMuteChange((muted) => {
+      this.updateSpeakerIcon(muted);
+    });
+
+    this.events.once('shutdown', () => {
+      if (this.unsubscribeMute) {
+        this.unsubscribeMute();
+      }
+    });
+  }
+
+  /**
+   * Cập nhật hình vẽ icon loa theo trạng thái mute
+   */
+  private updateSpeakerIcon(isMuted: boolean): void {
+    this.speakerGraphics.clear();
+
+    if (!isMuted) {
+      this.speakerGraphics.fillStyle(0x4ade80, 1);
+      this.speakerGraphics.fillRect(-5, -2.5, 3, 5);
+      this.speakerGraphics.fillTriangle(-2, -2.5, 2, -5, 2, 5);
+      this.speakerGraphics.fillRect(-2, -2.5, 1, 5);
+
+      this.speakerGraphics.lineStyle(1.2, 0x4ade80, 0.9);
+      this.speakerGraphics.beginPath();
+      this.speakerGraphics.arc(2, 0, 3.5, -Phaser.Math.DEG_TO_RAD * 45, Phaser.Math.DEG_TO_RAD * 45, false);
+      this.speakerGraphics.strokePath();
+
+      this.speakerGraphics.beginPath();
+      this.speakerGraphics.arc(2, 0, 5.5, -Phaser.Math.DEG_TO_RAD * 45, Phaser.Math.DEG_TO_RAD * 45, false);
+      this.speakerGraphics.strokePath();
+    } else {
+      this.speakerGraphics.fillStyle(0x64748b, 0.85);
+      this.speakerGraphics.fillRect(-5, -2.5, 3, 5);
+      this.speakerGraphics.fillTriangle(-2, -2.5, 2, -5, 2, 5);
+      this.speakerGraphics.fillRect(-2, -2.5, 1, 5);
+
+      this.speakerGraphics.lineStyle(1.5, 0xef4444, 1);
+      this.speakerGraphics.lineBetween(-5, -5, 4, 5);
+    }
+  }
+
+  /**
    * Đăng ký phím điều hướng menu
    */
   private setupControls(): void {
@@ -271,6 +345,7 @@ export class MenuScene extends Phaser.Scene {
     this.keyEnter = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
     this.keySpace = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
     this.keyH = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.H);
+    this.keyN = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.N);
   }
 
   /**
@@ -348,11 +423,17 @@ export class MenuScene extends Phaser.Scene {
   private confirmSelection(): void {
     const selectedItem = this.menuItems[this.selectedIndex];
     if (selectedItem) {
+      AudioManager.getInstance().playMenuSelect();
       selectedItem.action();
     }
   }
 
   public update(): void {
+    // 0. Phím N bật/tắt tiếng (Mute)
+    if (this.keyN && Phaser.Input.Keyboard.JustDown(this.keyN)) {
+      AudioManager.getInstance().toggleMute();
+    }
+
     // 1. Phím Lên (UP / W)
     if (
       (this.keyUp && Phaser.Input.Keyboard.JustDown(this.keyUp)) ||
@@ -361,6 +442,7 @@ export class MenuScene extends Phaser.Scene {
       this.selectedIndex =
         (this.selectedIndex - 1 + this.menuItems.length) % this.menuItems.length;
       this.updateSelection();
+      AudioManager.getInstance().playMenuMove();
     }
 
     // 2. Phím Xuống (DOWN / S)
@@ -370,6 +452,7 @@ export class MenuScene extends Phaser.Scene {
     ) {
       this.selectedIndex = (this.selectedIndex + 1) % this.menuItems.length;
       this.updateSelection();
+      AudioManager.getInstance().playMenuMove();
     }
 
     // 3. Phím Enter hoặc Space để chọn

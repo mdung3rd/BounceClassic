@@ -6,6 +6,7 @@
 export interface GameSaveData {
   unlockedLevel: number;             // Index màn chơi mở khoá cao nhất (bắt đầu từ 0)
   highScores: Record<number, number>; // Kỷ lục điểm số theo từng level (0-based index)
+  isMuted?: boolean;                  // Trạng thái tắt tiếng (mute)
 }
 
 const STORAGE_KEY = 'bounce_classic_save_v1';
@@ -17,6 +18,7 @@ function getDefaultSaveData(): GameSaveData {
   return {
     unlockedLevel: 0,
     highScores: {},
+    isMuted: false,
   };
 }
 
@@ -33,6 +35,7 @@ export function loadSaveData(): GameSaveData {
     return {
       unlockedLevel: typeof parsed.unlockedLevel === 'number' && parsed.unlockedLevel >= 0 ? parsed.unlockedLevel : 0,
       highScores: parsed.highScores && typeof parsed.highScores === 'object' ? parsed.highScores : {},
+      isMuted: Boolean(parsed.isMuted),
     };
   } catch (error) {
     console.warn('[SaveSystem] Không thể đọc dữ liệu từ localStorage:', error);
@@ -122,3 +125,21 @@ export function resetSaveData(): void {
     console.warn('[SaveSystem] Không thể xóa dữ liệu từ localStorage:', error);
   }
 }
+
+/**
+ * Kiểm tra xem âm thanh có đang bị mute hay không
+ */
+export function isAudioMuted(): boolean {
+  const data = loadSaveData();
+  return Boolean(data.isMuted);
+}
+
+/**
+ * Lưu trạng thái mute âm thanh vào localStorage
+ */
+export function setAudioMuted(muted: boolean): void {
+  const data = loadSaveData();
+  data.isMuted = muted;
+  saveGameData(data);
+}
+
