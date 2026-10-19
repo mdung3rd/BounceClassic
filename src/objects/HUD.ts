@@ -38,8 +38,8 @@ export class HUD extends Phaser.GameObjects.Container {
     this.bgGraphics.fillStyle(0xff9999, 1);
     this.bgGraphics.fillCircle(13, 10, 1);
 
-    // 2. Text hiển thị số mạng (bắt đầu là 3)
-    this.livesText = scene.add.text(21, 5, 'x3', {
+    // 2. Text hiển thị số mạng (bắt đầu theo PHYSICS_CONFIG.INITIAL_LIVES)
+    this.livesText = scene.add.text(21, 5, `x${PHYSICS_CONFIG.INITIAL_LIVES}`, {
       fontFamily: 'monospace',
       fontSize: '10px',
       color: '#f8fafc',

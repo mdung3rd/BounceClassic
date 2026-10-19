@@ -84,7 +84,7 @@ export const PHYSICS_CONFIG = {
   CAMERA_LERP_Y: 0.1,
 
   // Gameplay & Game Loop
-  INITIAL_LIVES: 3,           // Số mạng ban đầu
+  INITIAL_LIVES: 5,           // Số mạng ban đầu
   POINTS_PER_RING: 500,       // Số điểm khi nhặt 1 ring
   INVINCIBILITY_DURATION: 1.0,// Thời gian bất tử sau khi hồi sinh (giây)
   EXPLOSION_DURATION: 0.5,    // Thời gian hiệu ứng nổ khi chạm gai (giây)
