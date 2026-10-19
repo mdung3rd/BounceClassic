@@ -2,6 +2,8 @@
 import Phaser from 'phaser';
 import { PHYSICS_CONFIG } from './config/physics';
 import { HelpScene } from './scenes/HelpScene';
+import { MenuScene } from './scenes/MenuScene';
+import { LevelSelectScene } from './scenes/LevelSelectScene';
 import { GameScene } from './scenes/GameScene';
 
 const config: Phaser.Types.Core.GameConfig = {
@@ -28,10 +30,12 @@ const config: Phaser.Types.Core.GameConfig = {
         Phaser.Input.Keyboard.KeyCodes.LEFT,
         Phaser.Input.Keyboard.KeyCodes.RIGHT,
         Phaser.Input.Keyboard.KeyCodes.SPACE,
+        Phaser.Input.Keyboard.KeyCodes.ENTER,
+        Phaser.Input.Keyboard.KeyCodes.ESC,
       ],
     },
   },
-  scene: [HelpScene, GameScene],
+  scene: [HelpScene, MenuScene, LevelSelectScene, GameScene],
 };
 
 new Phaser.Game(config);

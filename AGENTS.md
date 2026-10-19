@@ -21,9 +21,10 @@ Quả bóng đỏ lăn trên sàn, chỉ nhảy khi bấm phím (chuẩn Nokia);
 
 src/
 config/physics.ts <- MỌI hằng số vật lý
-scenes/ <- BootScene, MenuScene, GameScene...
-objects/ <- Ball, Ring, Spike, Checkpoint, Exit...
-levels/ <- level dạng mảng ký tự
+scenes/ <- HelpScene, MenuScene, LevelSelectScene, GameScene...
+objects/ <- Ball, Ring, Spike, Checkpoint, Exit, HUD, ObjectManager...
+levels/ <- types.ts, level1.ts, index.ts (export mảng LEVELS)...
+utils/ <- save.ts (lưu trữ localStorage bọc try/catch)...
 public/assets/
 
 ## Điều khiển
@@ -31,7 +32,10 @@ public/assets/
 - Trái/Phải: Phím mũi tên trái/phải hoặc A/D
 - Nhảy: Space, W hoặc Phím mũi tên lên
 - Chơi lại màn: Phím R
-- Tạm dừng: Phím P hoặc Esc
+- Tạm dừng: Phím P hoặc Esc (khi đang chơi)
+- Về Menu chính: Phím M (hoạt động khi đang chơi, tạm dừng, game over hoặc level complete)
+- Điều hướng Menu / Chọn Level: Mũi tên (hoặc WASD), Enter / Space để chọn, Esc để quay lại Menu
+- Thắng màn (Level Complete): Enter để sang level kế (hoặc về menu nếu là level cuối), R để chơi lại màn
 
 ## Luật BẮT BUỘC
 
@@ -85,5 +89,5 @@ public/assets/
 - [x] Prompt 3: Đối tượng chơi
 - [x] Prompt 4: Phồng/xẹp, nước, kẻ địch, thanh nảy
 - [x] Prompt 5: Tạm dừng + phím tắt + màn hình hướng dẫn điều khiển
-- [ ] Prompt 6: Menu, âm thanh, thêm level
-- [ ] Prompt 7: Hoàn thiện
+- [x] Prompt 6: Menu chính, hệ thống chọn level, lưu tiến trình & điểm cao (save.ts), phím tắt M
+- [ ] Prompt 7: Hoàn thiện (âm thanh, thêm level)

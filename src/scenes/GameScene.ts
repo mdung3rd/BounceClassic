@@ -2,14 +2,18 @@
 import Phaser from 'phaser';
 import { PHYSICS_CONFIG } from '../config/physics';
 import { Ball, BallInputState } from '../objects/Ball';
-import { LEVEL_1 } from '../levels/level1';
+import { LEVELS } from '../levels';
 import { LevelData } from '../levels/types';
 import { ObjectManager } from '../objects/ObjectManager';
 import { HUD } from '../objects/HUD';
+import { saveLevelProgress } from '../utils/save';
 
 export class GameScene extends Phaser.Scene {
+  // Index của level hiện tại trong mảng LEVELS
+  private levelIndex: number = 0;
+
   // Dữ liệu bản đồ level hiện tại
-  private level: LevelData = LEVEL_1;
+  private level: LevelData = LEVELS[0];
 
   // Đối tượng quả bóng
   private ball!: Ball;
@@ -50,6 +54,8 @@ export class GameScene extends Phaser.Scene {
   private keyEsc?: Phaser.Input.Keyboard.Key;
   private keyR?: Phaser.Input.Keyboard.Key;
   private keyB?: Phaser.Input.Keyboard.Key;
+  private keyM?: Phaser.Input.Keyboard.Key;
+  private keyEnter?: Phaser.Input.Keyboard.Key;
 
   // Trạng thái kết thúc game
   private isGameOver: boolean = false;
@@ -57,6 +63,15 @@ export class GameScene extends Phaser.Scene {
 
   constructor() {
     super({ key: 'GameScene' });
+  }
+
+  /**
+   * Nhận dữ liệu khởi tạo màn chơi (levelIndex)
+   */
+  public init(data: { levelIndex?: number }): void {
+    const idx = data.levelIndex ?? 0;
+    this.levelIndex = idx >= 0 && idx < LEVELS.length ? idx : 0;
+    this.level = LEVELS[this.levelIndex];
   }
 
   public create(): void {
@@ -107,7 +122,7 @@ export class GameScene extends Phaser.Scene {
     this.collisionDebugGraphics = this.add.graphics();
     this.collisionDebugGraphics.setDepth(20);
 
-    // 8. Thiết lập các phím điều khiển (Mũi tên, A/D, W, Space, P, Esc, R, và B cho Debug)
+    // 8. Thiết lập các phím điều khiển (Mũi tên, A/D, W, Space, P, Esc, R, B, M, Enter)
     if (this.input.keyboard) {
       this.input.keyboard.resetKeys();
       this.cursors = this.input.keyboard.createCursorKeys();
@@ -119,12 +134,21 @@ export class GameScene extends Phaser.Scene {
       this.keyEsc = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
       this.keyR = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R);
       this.keyB = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.B);
+      this.keyM = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.M);
+      this.keyEnter = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
     }
 
-    // Lắng nghe click / chạm màn hình để chơi lại khi game over hoặc win
+    // Lắng nghe click / chạm màn hình để chơi lại hoặc qua màn khi kết thúc game
     this.input.on('pointerdown', () => {
-      if (this.isGameOver || this.isLevelComplete) {
+      if (this.isGameOver) {
         this.restartGame();
+      } else if (this.isLevelComplete) {
+        const hasNextLevel = this.levelIndex + 1 < LEVELS.length;
+        if (hasNextLevel) {
+          this.scene.restart({ levelIndex: this.levelIndex + 1 });
+        } else {
+          this.goToMenu();
+        }
       }
     });
 
@@ -262,7 +286,7 @@ export class GameScene extends Phaser.Scene {
     const hint = this.add.text(
       PHYSICS_CONFIG.LOGIC_WIDTH / 2,
       PHYSICS_CONFIG.LOGIC_HEIGHT / 2 + 20,
-      'P/Esc: tiếp tục | R: chơi lại màn',
+      'P/Esc: tiếp tục | R: chơi lại | M: về menu',
       {
         fontFamily: 'monospace',
         fontSize: '10px',
@@ -336,6 +360,12 @@ export class GameScene extends Phaser.Scene {
    * Vòng lặp cập nhật chính của Phaser
    */
   public update(_time: number, delta: number): void {
+    // 0. Phím M: về Menu chính từ bất kỳ trạng thái nào (khi đang chơi, tạm dừng, Game Over hoặc Level Complete)
+    if (this.keyM && Phaser.Input.Keyboard.JustDown(this.keyM)) {
+      this.goToMenu();
+      return;
+    }
+
     // 1. Phím R: chơi lại màn hiện tại từ đầu (hoạt động khi đang chơi, tạm dừng, hoặc Game Over / Level Complete)
     if (this.keyR && Phaser.Input.Keyboard.JustDown(this.keyR)) {
       this.restartGame();
@@ -358,15 +388,32 @@ export class GameScene extends Phaser.Scene {
       return;
     }
 
-    // 4. Nếu game đã kết thúc (Game Over hoặc Win), kiểm tra bấm Space để chơi lại
-    if (this.isGameOver || this.isLevelComplete) {
+    // 4. Nếu đã Game Over: kiểm tra bấm Space để chơi lại
+    if (this.isGameOver) {
       if (this.keySpace && Phaser.Input.Keyboard.JustDown(this.keySpace)) {
         this.restartGame();
       }
       return;
     }
 
-    // 5. Xử lý phím B bật/tắt vẽ viền debug và overlay debug
+    // 5. Nếu đã hoàn thành màn (Level Complete):
+    //    - Bấm Enter hoặc Space để sang level kế (hoặc về menu nếu là level cuối)
+    if (this.isLevelComplete) {
+      if (
+        (this.keyEnter && Phaser.Input.Keyboard.JustDown(this.keyEnter)) ||
+        (this.keySpace && Phaser.Input.Keyboard.JustDown(this.keySpace))
+      ) {
+        const hasNextLevel = this.levelIndex + 1 < LEVELS.length;
+        if (hasNextLevel) {
+          this.scene.restart({ levelIndex: this.levelIndex + 1 });
+        } else {
+          this.goToMenu();
+        }
+      }
+      return;
+    }
+
+    // 6. Xử lý phím B bật/tắt vẽ viền debug và overlay debug
     if (this.keyB && Phaser.Input.Keyboard.JustDown(this.keyB)) {
       this.debugCollisionVisible = !this.debugCollisionVisible;
       this.debugContainer.setVisible(this.debugCollisionVisible);
@@ -456,17 +503,18 @@ export class GameScene extends Phaser.Scene {
     overlay.setDepth(200);
 
     const bg = this.add.graphics();
-    bg.fillStyle(0x000000, 0.82);
+    bg.fillStyle(0x000000, 0.85);
     bg.fillRect(0, 0, PHYSICS_CONFIG.LOGIC_WIDTH, PHYSICS_CONFIG.LOGIC_HEIGHT);
     overlay.add(bg);
 
     const title = this.add.text(
       PHYSICS_CONFIG.LOGIC_WIDTH / 2,
-      120,
+      115,
       'GAME OVER',
       {
         fontFamily: 'monospace',
-        fontSize: '22px',
+        fontSize: '24px',
+        fontStyle: 'bold',
         color: '#ef4444',
       }
     );
@@ -475,8 +523,8 @@ export class GameScene extends Phaser.Scene {
 
     const sub = this.add.text(
       PHYSICS_CONFIG.LOGIC_WIDTH / 2,
-      150,
-      'HẾT MẠNG!',
+      148,
+      'BẠN ĐÃ HẾT MẠNG!',
       {
         fontFamily: 'monospace',
         fontSize: '11px',
@@ -488,11 +536,11 @@ export class GameScene extends Phaser.Scene {
 
     const hint = this.add.text(
       PHYSICS_CONFIG.LOGIC_WIDTH / 2,
-      190,
-      'BẤM R / SPACE HOẶC CHẠM ĐỂ CHƠI LẠI',
+      192,
+      '[R / SPACE]: CHƠI LẠI  |  [M]: VỀ MENU',
       {
         fontFamily: 'monospace',
-        fontSize: '9px',
+        fontSize: '10px',
         color: '#38bdf8',
       }
     );
@@ -502,7 +550,7 @@ export class GameScene extends Phaser.Scene {
     // Hiệu ứng nhấp nháy cho text hướng dẫn
     this.tweens.add({
       targets: hint,
-      alpha: 0.3,
+      alpha: 0.35,
       duration: 500,
       yoyo: true,
       repeat: -1,
@@ -511,26 +559,33 @@ export class GameScene extends Phaser.Scene {
 
   /**
    * Xử lý hiển thị màn hình Level Complete khi chạm cổng thoát đã mở
+   * Mở khoá level tiếp theo, lưu điểm cao vào localStorage
    */
   private handleLevelComplete(): void {
     this.isLevelComplete = true;
+
+    // Lưu điểm và mở khoá level kế tiếp
+    const score = this.objectManager.score;
+    const { isNewHighScore, highScore } = saveLevelProgress(this.levelIndex, score);
+    const hasNextLevel = this.levelIndex + 1 < LEVELS.length;
 
     const overlay = this.add.container(0, 0);
     overlay.setScrollFactor(0);
     overlay.setDepth(200);
 
     const bg = this.add.graphics();
-    bg.fillStyle(0x000000, 0.82);
+    bg.fillStyle(0x000000, 0.85);
     bg.fillRect(0, 0, PHYSICS_CONFIG.LOGIC_WIDTH, PHYSICS_CONFIG.LOGIC_HEIGHT);
     overlay.add(bg);
 
     const title = this.add.text(
       PHYSICS_CONFIG.LOGIC_WIDTH / 2,
-      110,
+      95,
       'LEVEL COMPLETE',
       {
         fontFamily: 'monospace',
-        fontSize: '18px',
+        fontSize: '20px',
+        fontStyle: 'bold',
         color: '#facc15',
       }
     );
@@ -539,25 +594,48 @@ export class GameScene extends Phaser.Scene {
 
     const scoreText = this.add.text(
       PHYSICS_CONFIG.LOGIC_WIDTH / 2,
-      145,
-      `TỔNG ĐIỂM: ${this.objectManager.score}`,
+      128,
+      `TỔNG ĐIỂM: ${score}`,
       {
         fontFamily: 'monospace',
-        fontSize: '12px',
+        fontSize: '13px',
+        fontStyle: 'bold',
         color: '#4ade80',
       }
     );
     scoreText.setOrigin(0.5);
     overlay.add(scoreText);
 
-    const hint = this.add.text(
+    const recordStr = isNewHighScore
+      ? `★ KỶ LỤC MỚI: ${score} ĐIỂM! ★`
+      : `KỶ LỤC HIỆN TẠI: ${highScore} ĐIỂM`;
+    const recordText = this.add.text(
       PHYSICS_CONFIG.LOGIC_WIDTH / 2,
-      190,
-      'BẤM R / SPACE HOẶC CHẠM ĐỂ CHƠI LẠI',
+      152,
+      recordStr,
       {
         fontFamily: 'monospace',
-        fontSize: '9px',
+        fontSize: '10px',
+        color: isNewHighScore ? '#f59e0b' : '#94a3b8',
+      }
+    );
+    recordText.setOrigin(0.5);
+    overlay.add(recordText);
+
+    const hintStr = hasNextLevel
+      ? '[ENTER]: SANG LEVEL TIẾP THEO\n[R]: CHƠI LẠI  |  [M]: VỀ MENU'
+      : '[ENTER / M]: VỀ MENU CHÍNH\n[R]: CHƠI LẠI MÀN NÀY';
+
+    const hint = this.add.text(
+      PHYSICS_CONFIG.LOGIC_WIDTH / 2,
+      198,
+      hintStr,
+      {
+        fontFamily: 'monospace',
+        fontSize: '10px',
         color: '#38bdf8',
+        align: 'center',
+        lineSpacing: 6,
       }
     );
     hint.setOrigin(0.5);
@@ -566,7 +644,7 @@ export class GameScene extends Phaser.Scene {
     // Hiệu ứng nhấp nháy cho text hướng dẫn
     this.tweens.add({
       targets: hint,
-      alpha: 0.3,
+      alpha: 0.35,
       duration: 500,
       yoyo: true,
       repeat: -1,
@@ -582,6 +660,18 @@ export class GameScene extends Phaser.Scene {
       this.tweens.resumeAll();
       this.isPaused = false;
     }
-    this.scene.restart();
+    this.scene.restart({ levelIndex: this.levelIndex });
+  }
+
+  /**
+   * Quay về Menu chính của game
+   */
+  private goToMenu(): void {
+    if (this.isPaused) {
+      this.time.paused = false;
+      this.tweens.resumeAll();
+      this.isPaused = false;
+    }
+    this.scene.start('MenuScene');
   }
 }

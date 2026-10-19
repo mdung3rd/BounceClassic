@@ -101,9 +101,10 @@ export class HelpScene extends Phaser.Scene {
       { action: 'Nhảy',        keys: 'Phím [SPACE],  [W]  hoặc  [↑]' },
       { action: 'Tạm dừng',    keys: 'Phím [P]  hoặc  [ESC]' },
       { action: 'Chơi lại',    keys: 'Phím [R]' },
+      { action: 'Về Menu',     keys: 'Phím [M]' },
     ];
 
-    let rowY = 136;
+    let rowY = 130;
     for (const item of controls) {
       // Nhãn hành động
       this.add.text(65, rowY, item.action, {
@@ -126,14 +127,14 @@ export class HelpScene extends Phaser.Scene {
         color: '#cbd5e1',
       });
 
-      rowY += 24;
+      rowY += 22;
     }
 
     // 7. Gợi ý bắt đầu nhấp nháy
     const startPrompt = this.add.text(
       width / 2,
       262,
-      '[ BẤM PHÍM BẤT KỲ ĐỂ BẮT ĐẦU ]',
+      '[ BẤM PHÍM BẤT KỲ ĐỂ TIẾP TỤC ]',
       {
         fontFamily: 'monospace',
         fontSize: '11px',
@@ -151,12 +152,12 @@ export class HelpScene extends Phaser.Scene {
       repeat: -1,
     });
 
-    // 8. Bắt đầu game khi bấm phím bất kỳ hoặc click / chạm chuột
+    // 8. Chuyển sang MenuScene khi bấm phím bất kỳ hoặc click / chạm chuột
     let hasStarted = false;
     const startGame = () => {
       if (hasStarted) return;
       hasStarted = true;
-      this.scene.start('GameScene');
+      this.scene.start('MenuScene');
     };
 
     if (this.input.keyboard) {
