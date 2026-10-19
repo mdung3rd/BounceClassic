@@ -53,6 +53,7 @@ public/assets/
 7. Web Audio chỉ khởi tạo sau lần bấm phím đầu tiên (tránh vi phạm autoplay policy của trình duyệt).
 8. Mọi thao tác đọc/ghi localStorage phải được bọc trong block try/catch để tránh crash khi ở chế độ ẩn danh hoặc bị chặn cookie/storage.
 9. Bắt buộc chạy `npm run build` thành công trước khi báo hoàn thành mỗi task.
+10. Quy định Git: Mọi thay đổi (sau khi người dùng kiểm tra test đạt yêu cầu) CHỈ ĐƯỢC COMMIT ở local, TUYỆT ĐỐI KHÔNG ĐƯỢC TỰ Ý PUSH lên GitHub. Chỉ thực hiện `git push` khi có lệnh rõ ràng từ người dùng.
 
 ## Ký hiệu level (mảng ký tự)
 
@@ -72,6 +73,7 @@ public/assets/
 
 - Làm xong phải chạy `npm run build` để chắc chắn không lỗi type
 - Cuối mỗi task: báo ngắn gọn đã sửa/tạo file nào và cách test
+- Quy định Git: Chỉ commit local (khi test xong), tuyệt đối không tự ý push lên GitHub nếu chưa có lệnh của tôi
 - Nếu yêu cầu mâu thuẫn với file này thì hỏi lại tôi trước khi làm
 - Không đụng vào file không liên quan đến task
 
@@ -82,6 +84,6 @@ public/assets/
 - [x] Prompt 2: Tilemap + va chạm
 - [x] Prompt 3: Đối tượng chơi
 - [x] Prompt 4: Phồng/xẹp, nước, kẻ địch, thanh nảy
-- [ ] Prompt 5: Tạm dừng + phím tắt + màn hình hướng dẫn điều khiển
+- [x] Prompt 5: Tạm dừng + phím tắt + màn hình hướng dẫn điều khiển
 - [ ] Prompt 6: Menu, âm thanh, thêm level
 - [ ] Prompt 7: Hoàn thiện

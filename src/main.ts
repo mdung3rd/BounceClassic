@@ -1,6 +1,7 @@
 // src/main.ts
 import Phaser from 'phaser';
 import { PHYSICS_CONFIG } from './config/physics';
+import { HelpScene } from './scenes/HelpScene';
 import { GameScene } from './scenes/GameScene';
 
 const config: Phaser.Types.Core.GameConfig = {
@@ -30,7 +31,7 @@ const config: Phaser.Types.Core.GameConfig = {
       ],
     },
   },
-  scene: [GameScene],
+  scene: [HelpScene, GameScene],
 };
 
 new Phaser.Game(config);
