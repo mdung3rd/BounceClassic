@@ -420,16 +420,20 @@ export class Ball extends Phaser.GameObjects.Container {
       }
 
       if (hitWallRight) {
-        // Khi bóng phồng nổi trên mặt nước chạm mép sàn gạch ngang bằng:
+        // Khi bóng ở trong nước chạm mép sàn gạch ngang bằng với mặt nước:
         // Tự động nâng nhẹ bóng lên mặt sàn bờ ao để thoát ra êm ái
+        const shoreTileY = bottomTileY;
+        const shoreTopY = shoreTileY * tileSize;
+        const hasClearance =
+          !isSolid(rightTileX, shoreTileY - 1) &&
+          (this.form === 'small' || !isSolid(rightTileX, shoreTileY - 2));
+
         if (
           this.isInWater &&
-          this.form === 'big' &&
-          !isSolid(rightTileX, topTileY) &&
-          !isSolid(rightTileX, bottomTileY - 1) &&
-          this.y <= bottomTileY * tileSize
+          hasClearance &&
+          this.y <= shoreTopY + currentRadius * 0.75
         ) {
-          this.y = bottomTileY * tileSize - currentRadius;
+          this.y = shoreTopY - currentRadius;
           this.onGround = true;
           hitWallRight = false;
         }
@@ -452,14 +456,18 @@ export class Ball extends Phaser.GameObjects.Container {
 
       if (hitWallLeft) {
         // Tương tự cho mép bờ bên trái
+        const shoreTileY = bottomTileY;
+        const shoreTopY = shoreTileY * tileSize;
+        const hasClearance =
+          !isSolid(leftTileX, shoreTileY - 1) &&
+          (this.form === 'small' || !isSolid(leftTileX, shoreTileY - 2));
+
         if (
           this.isInWater &&
-          this.form === 'big' &&
-          !isSolid(leftTileX, topTileY) &&
-          !isSolid(leftTileX, bottomTileY - 1) &&
-          this.y <= bottomTileY * tileSize
+          hasClearance &&
+          this.y <= shoreTopY + currentRadius * 0.75
         ) {
-          this.y = bottomTileY * tileSize - currentRadius;
+          this.y = shoreTopY - currentRadius;
           this.onGround = true;
           hitWallLeft = false;
         }

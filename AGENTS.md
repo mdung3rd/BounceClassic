@@ -96,4 +96,12 @@ public/assets/
 - [x] Prompt 6: Menu chính, hệ thống chọn level, lưu tiến trình & điểm cao (save.ts), phím tắt M
 - [x] Prompt 7A: Hệ thống âm thanh Web Audio (AudioManager.ts, chiptune synth, phím N, icon loa mute)
 - [x] Prompt 7B: Thêm level mới (Level 2, Level 3, Level 4)
-
+- [x] Prompt 8: Thiết kế lại Level 2, Level 3, Level 4 (không gian 2D nhiều tầng, hồ nước ngầm lớn, tháp lò xo, tool kiểm định tự động validateLevel.ts)
+- [x] Prompt 9: Sửa triệt để 2 lỗi Level 2 (mở thông hầm ngầm, mặt nước ngang bằng mặt sàn), đồng bộ cơ chế bờ hồ ngang bằng cho Level 3 & Level 4 và Ball.ts
+- [x] Prompt 10: Sửa Level 3 (thiết kế lại vị trí thanh lò xo xuất phát tiếp đất chuẩn xác vào C1, đóng kín buồng Cổng thoát E tránh gây hiểu nhầm)
+- [x] Prompt 11: Đưa Cổng thoát E của Level 3 lên đích đến cuối cùng ở Tầng Thượng Thiên Đàng (hàng 6, cột 4), loại bỏ hoàn toàn khối gạch che chắn gây hiểu nhầm ở khu xuất phát
+- [x] Prompt 12: Thiết kế lại Tháp Lò Xo Level 3 (nâng bệ phóng lò xo lên hàng 12 xóa bỏ hoàn toàn ống khói hẹp bị kẹt, mở cửa sổ trời rộng thông thoáng lên Tầng Thượng và Chòi Vọng Cảnh, thiết kế cầu thang 2 bậc hàng 14 & 16 leo lên bệ phóng cực kỳ dễ dàng)
+- [x] Prompt 13: Xóa bỏ hố rỗng bẫy người chơi dưới Pháo Đài Level 4 (lấp đầy móng núi đá kiên cố từ hàng 7..32 cột 0..27, loại bỏ hoàn toàn khoảng không vô nghĩa gây kẹt bóng)
+- [x] Prompt 14: Tinh chỉnh Level 2 & 3 (tăng độ thử thách với bẫy gai S, loại bỏ hoàn toàn các chi tiết thừa/hố rỗng/lò xo bị chặn, tối ưu bậc thang chuẩn 2 ô, kiểm định tự động 100% qua validateLevel.ts)
+- [x] Prompt 15: Sửa triệt để 2 chỗ bất hợp lý Level 2 & 3 (mở thông sàn Tầng Thượng đưa Cổng thoát E ra vị trí thoáng không còn bị tường chặn; xóa bỏ hoàn toàn tảng đá nổi thừa trong lòng hồ, khắc phục lỗi render gợn sóng dưới gạch)
+- [x] Prompt 16: Thiết kế lại Level 2, 3, 4 theo phong cách Parkour (chuỗi bục lơ lửng, leo bục ziczac, precision drops, timing né quái & bẫy gai xen kẽ, lò xo nhịp nhàng), giữ nguyên toàn bộ logic game, 100% vượt qua kiểm định validateLevel.ts và build thành công
