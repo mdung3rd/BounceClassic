@@ -93,4 +93,5 @@ public/assets/
 - [x] Prompt 5: Tạm dừng + phím tắt + màn hình hướng dẫn điều khiển
 - [x] Prompt 6: Menu chính, hệ thống chọn level, lưu tiến trình & điểm cao (save.ts), phím tắt M
 - [x] Prompt 7A: Hệ thống âm thanh Web Audio (AudioManager.ts, chiptune synth, phím N, icon loa mute)
-- [ ] Prompt 7B: Thêm level mới
+- [x] Prompt 7B: Thêm level mới (Level 2, Level 3, Level 4)
+
