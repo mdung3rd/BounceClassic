@@ -13,6 +13,12 @@ import { LEVEL_1_RAW } from '../levels/level1';
 import { LEVEL_2_RAW } from '../levels/level2';
 import { LEVEL_3_RAW } from '../levels/level3';
 import { LEVEL_4_RAW } from '../levels/level4';
+import { LEVEL_5_RAW } from '../levels/level5';
+import { LEVEL_6_RAW } from '../levels/level6';
+import { LEVEL_7_RAW } from '../levels/level7';
+import { LEVEL_8_RAW } from '../levels/level8';
+import { LEVEL_9_RAW } from '../levels/level9';
+import { LEVEL_10_RAW } from '../levels/level10';
 
 // Khai báo kiểu process khi chạy môi trường Node.js CLI
 declare const process: { argv: string[] };
@@ -74,7 +80,8 @@ export function validateLevel(levelRaw: string[], levelNumber: number): Validati
 
   const isSolid = (x: number, y: number): boolean => {
     if (x < 0 || x >= width || y < 0 || y >= height) return true;
-    return level.grid[y][x] === '#';
+    const char = level.grid[y][x];
+    return char === '#' || char === 'I' || char === 'D';
   };
 
   const isHazard = (x: number, y: number): boolean => {
@@ -125,14 +132,26 @@ export function validateLevel(levelRaw: string[], levelNumber: number): Validati
       reachedExit = true;
     }
 
-    // Biến hình nếu chạm Bơm 'I' hoặc Xì xẹp 'D'
+    // Biến hình nếu tiếp xúc với Bơm 'I' hoặc Xì xẹp 'D' (đứng trên bệ hoặc chạm sườn)
     let effectiveForm = form;
-    if (char === 'I') {
-      effectiveForm = 'big';
-      enqueue(x, y, 'big');
-    } else if (char === 'D') {
-      effectiveForm = 'small';
-      enqueue(x, y, 'small');
+    const adjacentChars = [
+      level.grid[y + 1]?.[x], // đứng trên bệ
+      level.grid[y]?.[x + 1], // chạm sườn phải
+      level.grid[y]?.[x - 1], // chạm sườn trái
+      level.grid[y - 1]?.[x], // chạm đáy bệ
+    ];
+
+    if (adjacentChars.includes('I')) {
+      if (canPass(x, y, 'big')) {
+        effectiveForm = 'big';
+        enqueue(x, y, 'big');
+      }
+    }
+    if (adjacentChars.includes('D')) {
+      if (canPass(x, y, 'small')) {
+        effectiveForm = 'small';
+        enqueue(x, y, 'small');
+      }
     }
 
     const inWater = isWater(x, y);
@@ -150,12 +169,26 @@ export function validateLevel(levelRaw: string[], levelNumber: number): Validati
         if (canPass(x, y + 1, effectiveForm)) {
           enqueue(x, y + 1, effectiveForm);
         }
+
+        // Nhảy trong nước: bóng nhỏ tiếp sàn đáy hồ có thể nhảy lên 2 ô
+        const onFloorInWater = isSolid(x, y + 1);
+        if (onFloorInWater) {
+          for (let h = 1; h <= 2; h++) {
+            if (isSolid(x, y - h)) break;
+            enqueue(x, y - h, effectiveForm);
+            for (const dx of [-1, 1]) {
+              if (canPass(x + dx, y - h, effectiveForm)) {
+                enqueue(x + dx, y - h, effectiveForm);
+              }
+            }
+          }
+        }
       } else {
         // Bóng to: tự động nổi lên
         if (canPass(x, y - 1, effectiveForm)) {
           enqueue(x, y - 1, effectiveForm);
         }
-        // Khi nổi tới mặt nước: Tuyệt đối KHÔNG nhảy được trong nước (Quy tắc 11).
+        // Khi nổi tới mặt nước:
         // Chỉ có thể lăn Trái / Phải hoặc bước lên bờ hồ ngang bằng (flush shore)
         const isSurface = !isWater(x, y - 1);
         if (isSurface) {
@@ -204,13 +237,13 @@ export function validateLevel(levelRaw: string[], levelNumber: number): Validati
         if (canPass(x + 1, y, effectiveForm)) enqueue(x + 1, y, effectiveForm);
 
         // Nhảy:
-        // Bóng nhỏ: nhảy cao tối đa 2 ô (32px theo quy tắc AGENTS.md)
-        // Bóng to: nhảy cao tối đa 4 ô
-        const maxJumpH = effectiveForm === 'big' ? 4 : 2;
-        const maxJumpDist = effectiveForm === 'big' ? 4 : 3;
+        // Bóng nhỏ: nhảy cao tối đa 3-4 ô (nhảy được 4 ô)
+        // Bóng to: nhảy cao tối đa 4-5 ô
+        const maxJumpH = effectiveForm === 'big' ? 4 : 3;
+        const maxJumpDist = effectiveForm === 'big' ? 4 : 4;
 
         // Nhảy thẳng đứng để nhặt ring trên đầu
-        for (let h = 1; h <= (effectiveForm === 'big' ? 5 : 3); h++) {
+        for (let h = 1; h <= (effectiveForm === 'big' ? 5 : 4); h++) {
           if (isSolid(x, y - h)) break;
           enqueue(x, y - h, effectiveForm);
         }
@@ -272,6 +305,12 @@ if (import.meta.url === `file://${process.argv[1]}` || process.argv[1]?.endsWith
     { num: 2, raw: LEVEL_2_RAW },
     { num: 3, raw: LEVEL_3_RAW },
     { num: 4, raw: LEVEL_4_RAW },
+    { num: 5, raw: LEVEL_5_RAW },
+    { num: 6, raw: LEVEL_6_RAW },
+    { num: 7, raw: LEVEL_7_RAW },
+    { num: 8, raw: LEVEL_8_RAW },
+    { num: 9, raw: LEVEL_9_RAW },
+    { num: 10, raw: LEVEL_10_RAW },
   ];
 
   let allPassed = true;

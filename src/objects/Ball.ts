@@ -128,13 +128,15 @@ export class Ball extends Phaser.GameObjects.Container {
 
     for (let ty = minTy; ty <= maxTy; ty++) {
       for (let tx = minTx; tx <= maxTx; tx++) {
-        // Ngoài biên level coi như gạch cản trở
+        // Ngoài biên level, gạch '#' hoặc bệ biến hình 'I'/'D' coi như vật cản cứng
         if (
           tx < 0 ||
           tx >= level.width ||
           ty < 0 ||
           ty >= level.height ||
-          level.grid[ty][tx] === '#'
+          level.grid[ty][tx] === '#' ||
+          level.grid[ty][tx] === 'I' ||
+          level.grid[ty][tx] === 'D'
         ) {
           const tileMinX = tx * tileSize;
           const tileMaxX = (tx + 1) * tileSize;
@@ -182,6 +184,14 @@ export class Ball extends Phaser.GameObjects.Container {
 
       // 2. Nếu chạm gạch, thử các độ lệch nhỏ (nudge) để tìm chỗ trống gần nhất
       const candidateOffsets = [
+        { dx: 0, dy: -5 }, // Đứng trên bệ: nâng lên trên đúng 5px (11 - 6 = 5px)
+        { dx: 0, dy: -6 },
+        { dx: -5, dy: 0 }, // Chạm cạnh phải bệ: đẩy sang trái 5px
+        { dx: -6, dy: 0 },
+        { dx: 5, dy: 0 },  // Chạm cạnh trái bệ: đẩy sang phải 5px
+        { dx: 6, dy: 0 },
+        { dx: 0, dy: 5 },  // Chạm đáy bệ: đẩy xuống dưới 5px
+        { dx: 0, dy: 6 },
         { dx: 0, dy: -2 },
         { dx: 0, dy: 2 },
         { dx: -2, dy: 0 },
@@ -190,10 +200,8 @@ export class Ball extends Phaser.GameObjects.Container {
         { dx: 0, dy: 4 },
         { dx: -4, dy: 0 },
         { dx: 4, dy: 0 },
-        { dx: 0, dy: -6 },
-        { dx: 0, dy: 6 },
-        { dx: -6, dy: 0 },
-        { dx: 6, dy: 0 },
+        { dx: 0, dy: -8 },
+        { dx: 0, dy: -10 },
       ];
 
       for (const offset of candidateOffsets) {
@@ -215,6 +223,10 @@ export class Ball extends Phaser.GameObjects.Container {
     } else {
       // Thu nhỏ về 'small': bán kính 6 luôn nhỏ hơn 11 nên không bao giờ bị kẹt mới
       this.form = 'small';
+      // Nếu đang tiếp sàn/bệ, hạ nhẹ tâm bóng 5px để chân bóng chạm sát mặt bệ
+      if (this.onGround && !this.checkSolidOverlap(this.x, this.y + 5, PHYSICS_CONFIG.BALL_RADIUS_SMALL, level)) {
+        this.y += 5;
+      }
       this.drawBall();
       this.playTransformTween();
       return true;
@@ -322,12 +334,13 @@ export class Ball extends Phaser.GameObjects.Container {
     }
     this.isInWater = foundWater;
 
-    // Hàm kiểm tra ô gạch cản trở '#'
+    // Hàm kiểm tra ô cản trở '#' hoặc bệ biến hình 'I'/'D' (có tính chất như gạch)
     const isSolid = (tx: number, ty: number): boolean => {
       if (tx < 0 || tx >= level.width || ty < 0 || ty >= level.height) {
         return true;
       }
-      return level.grid[ty][tx] === '#';
+      const char = level.grid[ty][tx];
+      return char === '#' || char === 'I' || char === 'D';
     };
 
     // Quản lý bộ đệm nhảy (Jump Buffering)
@@ -544,11 +557,17 @@ export class Ball extends Phaser.GameObjects.Container {
         const isJumpRequested = input.jump || this.jumpBufferTimer > 0;
         if (isJumpRequested) {
           if (this.isInWater) {
-            // Khi ở trong nước: Tuyệt đối KHÔNG thể nhảy (theo luật AGENTS.md), chỉ lăn trái/phải
-            this.vy = 0;
+            // Khi ở trong nước: Quả bóng thường (small) nhảy lên cao 2 ô
+            const waterJumpVelocity =
+              this.form === 'big'
+                ? PHYSICS_CONFIG.WATER_JUMP_VELOCITY_BIG
+                : PHYSICS_CONFIG.WATER_JUMP_VELOCITY_SMALL;
+            this.vy = -waterJumpVelocity;
             this.jumpBufferTimer = 0;
+            this.onGround = false;
+            AudioManager.getInstance().playJump();
           } else {
-            // Trên cạn: Nhảy bình thường theo dạng bóng
+            // Trên cạn: Nhảy bình thường theo dạng bóng (bóng thường nhảy cao 4 ô)
             const jumpVelocity =
               this.form === 'big'
                 ? PHYSICS_CONFIG.JUMP_VELOCITY_BIG

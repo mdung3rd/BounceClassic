@@ -28,9 +28,11 @@ interface LevelSlot {
  * Điều hướng bằng mũi tên (hoặc WASD), Enter để vào, Esc để về menu.
  */
 export class LevelSelectScene extends Phaser.Scene {
-  private static readonly COLS = 4;
+  private static readonly COLS = 5;
   private static readonly ROWS = 2;
-  private static readonly TOTAL_SLOTS = 8;
+  private static readonly TOTAL_SLOTS = 10;
+  private static readonly SLOT_WIDTH = 70;
+  private static readonly SLOT_HEIGHT = 56;
 
   private selectedIndex: number = 0;
   private slots: LevelSlot[] = [];
@@ -148,10 +150,10 @@ export class LevelSelectScene extends Phaser.Scene {
   private createLevelGrid(width: number): void {
     this.slots = [];
 
-    const slotWidth = 76;
-    const slotHeight = 62;
-    const gapX = 14;
-    const gapY = 12;
+    const slotWidth = LevelSelectScene.SLOT_WIDTH;
+    const slotHeight = LevelSelectScene.SLOT_HEIGHT;
+    const gapX = 12;
+    const gapY = 10;
 
     const totalGridWidth =
       LevelSelectScene.COLS * slotWidth + (LevelSelectScene.COLS - 1) * gapX;
@@ -441,8 +443,8 @@ export class LevelSelectScene extends Phaser.Scene {
     const selectedSlot = this.slots[this.selectedIndex];
     if (!selectedSlot) return;
 
-    const slotWidth = 76;
-    const slotHeight = 62;
+    const slotWidth = LevelSelectScene.SLOT_WIDTH;
+    const slotHeight = LevelSelectScene.SLOT_HEIGHT;
 
     // Vẽ viền highlight bao quanh ô đang chọn
     this.highlightBox.clear();

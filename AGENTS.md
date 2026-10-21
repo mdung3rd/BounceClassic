@@ -52,15 +52,15 @@ public/assets/
 4. Chưa có asset thì vẽ placeholder bằng Graphics/RenderTexture. Không tải
    ảnh hay âm thanh từ internet.
 5. Mỗi loại đối tượng game là một class riêng trong src/objects.
-6. Quy tắc thiết kế map / độ cao: Bóng nhảy cao tối đa h = v^2 / (2*g) ≈ 52.3px
-   (tương đương ~3.26 ô 16px). MỌI bậc thang hoặc vật cản mà bóng cần nhảy lên
-   chỉ được cao tối đa 2 ô (32px), tuyệt đối không thiết kế bậc cao 3-4 ô vì bóng
-   sẽ bị hụt mép và không thể trèo lên được.
+6. Quy tắc thiết kế map / độ cao: Quả bóng thường (dạng nhỏ) nhảy cao tối đa 4 ô trên cạn
+   (v = 320px/s, g = 750px/s^2, h ≈ 65.6px / ~4.1 ô). Bậc thang hoặc vật cản mà bóng nhỏ
+   cần nhảy lên có thể cao tối đa 3-4 ô.
 7. Web Audio chỉ khởi tạo sau lần bấm phím đầu tiên (tránh vi phạm autoplay policy của trình duyệt).
 8. Mọi thao tác đọc/ghi localStorage phải được bọc trong block try/catch để tránh crash khi ở chế độ ẩn danh hoặc bị chặn cookie/storage.
 9. Bắt buộc chạy `npm run build` thành công trước khi báo hoàn thành mỗi task.
 10. Quy định Git: Mọi thay đổi (sau khi người dùng kiểm tra test đạt yêu cầu) CHỈ ĐƯỢC COMMIT ở local, TUYỆT ĐỐI KHÔNG ĐƯỢC TỰ Ý PUSH lên GitHub. Chỉ thực hiện `git push` khi có lệnh rõ ràng từ người dùng.
-11. Quy tắc nước ('~'): KHÔNG ĐƯỢC thêm cơ chế nhảy ở dưới nước. Quả bóng ở dưới nước chỉ có thể di chuyển sang trái hoặc phải. Bóng to ở dưới nước thì auto nổi, còn bóng nhỏ thì auto chìm. Chỉ được thêm ô bơm phồng ('I') ở dưới nước để bóng phồng to và nổi lên bờ ao.
+11. Quy tắc nước ('~'): Quả bóng thường (dạng nhỏ) khi ở dưới nước và tiếp sàn được phép nhảy lên cao 2 ô (v_water = 96px/s, g_water = 130px/s^2, h ≈ 34.6px / ~2.1 ô) để vượt bục dưới nước hoặc nhảy lên bờ ao. Bóng to ở dưới nước tự động nổi lên (buoyancy) như phao bơi. Có thể đặt ô bơm phồng ('I') ở dưới nước để bóng phồng to và tự nổi lên bờ.
+12. Quy tắc bệ biến hình ('I', 'D'): Bệ bơm phồng ('I') và bệ xì xẹp ('D') có tính chất vật lý như gạch kiên cố (bóng có thể đứng lên, nhảy từ trên bệ và bị cản ở các cạnh như gạch). Khi bóng chạm vào bất kỳ mặt nào của bệ sẽ kích hoạt biến hình tương ứng (I: nhỏ -> to; D: to -> nhỏ).
 
 
 ## Ký hiệu level (mảng ký tự)
@@ -85,23 +85,3 @@ public/assets/
 - Nếu yêu cầu mâu thuẫn với file này thì hỏi lại tôi trước khi làm
 - Không đụng vào file không liên quan đến task
 
-## Tiến độ (cập nhật cuối mỗi task)
-
-- [x] Prompt 0: Setup
-- [x] Prompt 1: Quả bóng nảy
-- [x] Prompt 2: Tilemap + va chạm
-- [x] Prompt 3: Đối tượng chơi
-- [x] Prompt 4: Phồng/xẹp, nước, kẻ địch, thanh nảy
-- [x] Prompt 5: Tạm dừng + phím tắt + màn hình hướng dẫn điều khiển
-- [x] Prompt 6: Menu chính, hệ thống chọn level, lưu tiến trình & điểm cao (save.ts), phím tắt M
-- [x] Prompt 7A: Hệ thống âm thanh Web Audio (AudioManager.ts, chiptune synth, phím N, icon loa mute)
-- [x] Prompt 7B: Thêm level mới (Level 2, Level 3, Level 4)
-- [x] Prompt 8: Thiết kế lại Level 2, Level 3, Level 4 (không gian 2D nhiều tầng, hồ nước ngầm lớn, tháp lò xo, tool kiểm định tự động validateLevel.ts)
-- [x] Prompt 9: Sửa triệt để 2 lỗi Level 2 (mở thông hầm ngầm, mặt nước ngang bằng mặt sàn), đồng bộ cơ chế bờ hồ ngang bằng cho Level 3 & Level 4 và Ball.ts
-- [x] Prompt 10: Sửa Level 3 (thiết kế lại vị trí thanh lò xo xuất phát tiếp đất chuẩn xác vào C1, đóng kín buồng Cổng thoát E tránh gây hiểu nhầm)
-- [x] Prompt 11: Đưa Cổng thoát E của Level 3 lên đích đến cuối cùng ở Tầng Thượng Thiên Đàng (hàng 6, cột 4), loại bỏ hoàn toàn khối gạch che chắn gây hiểu nhầm ở khu xuất phát
-- [x] Prompt 12: Thiết kế lại Tháp Lò Xo Level 3 (nâng bệ phóng lò xo lên hàng 12 xóa bỏ hoàn toàn ống khói hẹp bị kẹt, mở cửa sổ trời rộng thông thoáng lên Tầng Thượng và Chòi Vọng Cảnh, thiết kế cầu thang 2 bậc hàng 14 & 16 leo lên bệ phóng cực kỳ dễ dàng)
-- [x] Prompt 13: Xóa bỏ hố rỗng bẫy người chơi dưới Pháo Đài Level 4 (lấp đầy móng núi đá kiên cố từ hàng 7..32 cột 0..27, loại bỏ hoàn toàn khoảng không vô nghĩa gây kẹt bóng)
-- [x] Prompt 14: Tinh chỉnh Level 2 & 3 (tăng độ thử thách với bẫy gai S, loại bỏ hoàn toàn các chi tiết thừa/hố rỗng/lò xo bị chặn, tối ưu bậc thang chuẩn 2 ô, kiểm định tự động 100% qua validateLevel.ts)
-- [x] Prompt 15: Sửa triệt để 2 chỗ bất hợp lý Level 2 & 3 (mở thông sàn Tầng Thượng đưa Cổng thoát E ra vị trí thoáng không còn bị tường chặn; xóa bỏ hoàn toàn tảng đá nổi thừa trong lòng hồ, khắc phục lỗi render gợn sóng dưới gạch)
-- [x] Prompt 16: Thiết kế lại Level 2, 3, 4 theo phong cách Parkour (chuỗi bục lơ lửng, leo bục ziczac, precision drops, timing né quái & bẫy gai xen kẽ, lò xo nhịp nhàng), giữ nguyên toàn bộ logic game, 100% vượt qua kiểm định validateLevel.ts và build thành công

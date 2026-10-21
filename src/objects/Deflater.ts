@@ -31,28 +31,38 @@ export class Deflater extends Phaser.GameObjects.Container {
     const halfW = PHYSICS_CONFIG.DEFLATER_WIDTH / 2;
     const halfH = PHYSICS_CONFIG.DEFLATER_HEIGHT / 2;
 
-    // 1. Đế kim loại xám sẫm
+    // 1. Khối bục gạch nền xanh dương đậm (16x16px kiên cố)
+    this.deflaterGraphics.fillStyle(0x0369a1, 1);
+    this.deflaterGraphics.fillRect(-halfW, -halfH, 16, 16);
+
+    // 2. Viền sáng khối 3D (phía trên và bên trái)
+    this.deflaterGraphics.fillStyle(0x7dd3fc, 1);
+    this.deflaterGraphics.fillRect(-halfW, -halfH, 16, 1);
+    this.deflaterGraphics.fillRect(-halfW, -halfH, 1, 16);
+
+    // 3. Viền tối đổ bóng (phía dưới và bên phải)
+    this.deflaterGraphics.fillStyle(0x0c4a6e, 1);
+    this.deflaterGraphics.fillRect(-halfW, halfH - 1, 16, 1);
+    this.deflaterGraphics.fillRect(halfW - 1, -halfH, 1, 16);
+
+    // 4. Đế kim loại chịu lực ở đáy
     this.deflaterGraphics.fillStyle(0x334155, 1);
-    this.deflaterGraphics.fillRect(-halfW, halfH - 3, PHYSICS_CONFIG.DEFLATER_WIDTH, 3);
+    this.deflaterGraphics.fillRect(-halfW + 1, halfH - 3, 14, 2);
 
-    // 2. Thân van xả màu xanh ngọc / xanh dương
+    // 5. Thân trung tâm van xả khí áp suất
     this.deflaterGraphics.fillStyle(0x0284c7, 1);
-    this.deflaterGraphics.fillRoundedRect(-halfW + 1, -halfH + 2, PHYSICS_CONFIG.DEFLATER_WIDTH - 2, PHYSICS_CONFIG.DEFLATER_HEIGHT - 5, 2);
+    this.deflaterGraphics.fillRoundedRect(-halfW + 2, -halfH + 2, 12, 10, 1);
 
-    // 3. Viền phản quang
-    this.deflaterGraphics.lineStyle(1, 0x7dd3fc, 1);
-    this.deflaterGraphics.strokeRoundedRect(-halfW + 1, -halfH + 2, PHYSICS_CONFIG.DEFLATER_WIDTH - 2, PHYSICS_CONFIG.DEFLATER_HEIGHT - 5, 2);
-
-    // 4. Biểu tượng mũi tên hướng xuống / chữ 'D' màu trắng xanh
+    // 6. Biểu tượng mũi tên xì xẹp hướng xuống màu trắng cyan
     this.deflaterGraphics.fillStyle(0xf0f9ff, 1);
     // Vạch đứng
-    this.deflaterGraphics.fillRect(-1.5, -halfH + 4, 3, 7);
+    this.deflaterGraphics.fillRect(-1.5, -5, 3, 5);
     // Chóp nhọn hướng xuống
-    this.deflaterGraphics.fillTriangle(0, 3, -3, 0, 3, 0);
+    this.deflaterGraphics.fillTriangle(0, 4, -3.5, -1, 3.5, -1);
   }
 
   /**
-   * Kiểm tra va chạm giữa bóng tròn và AABB của ô xì xẹp
+   * Kiểm tra va chạm giữa bóng tròn và AABB của ô xì xẹp (có dung sai khi đứng trên bệ)
    */
   public checkCollision(bx: number, by: number, br: number): boolean {
     const halfW = PHYSICS_CONFIG.DEFLATER_WIDTH / 2;
@@ -68,7 +78,8 @@ export class Deflater extends Phaser.GameObjects.Container {
 
     const dx = bx - closestX;
     const dy = by - closestY;
-    return dx * dx + dy * dy <= br * br;
+    const effectiveRadius = br + 1.5;
+    return dx * dx + dy * dy <= effectiveRadius * effectiveRadius;
   }
 
   /**

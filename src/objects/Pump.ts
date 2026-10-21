@@ -31,28 +31,38 @@ export class Pump extends Phaser.GameObjects.Container {
     const halfW = PHYSICS_CONFIG.PUMP_WIDTH / 2;
     const halfH = PHYSICS_CONFIG.PUMP_HEIGHT / 2;
 
-    // 1. Đế kim loại
+    // 1. Khối bục gạch nền cam đậm (16x16px kiên cố)
+    this.pumpGraphics.fillStyle(0xc2410c, 1);
+    this.pumpGraphics.fillRect(-halfW, -halfH, 16, 16);
+
+    // 2. Viền sáng khối 3D (phía trên và bên trái)
+    this.pumpGraphics.fillStyle(0xfdba74, 1);
+    this.pumpGraphics.fillRect(-halfW, -halfH, 16, 1);
+    this.pumpGraphics.fillRect(-halfW, -halfH, 1, 16);
+
+    // 3. Viền tối đổ bóng (phía dưới và bên phải)
+    this.pumpGraphics.fillStyle(0x7c2d12, 1);
+    this.pumpGraphics.fillRect(-halfW, halfH - 1, 16, 1);
+    this.pumpGraphics.fillRect(halfW - 1, -halfH, 1, 16);
+
+    // 4. Đế kim loại chịu lực ở đáy
     this.pumpGraphics.fillStyle(0x334155, 1);
-    this.pumpGraphics.fillRect(-halfW, halfH - 3, PHYSICS_CONFIG.PUMP_WIDTH, 3);
+    this.pumpGraphics.fillRect(-halfW + 1, halfH - 3, 14, 2);
 
-    // 2. Bình chứa khí màu cam rực rỡ
+    // 5. Thân trung tâm bình khí nén áp suất cao
     this.pumpGraphics.fillStyle(0xea580c, 1);
-    this.pumpGraphics.fillRoundedRect(-halfW + 1, -halfH + 2, PHYSICS_CONFIG.PUMP_WIDTH - 2, PHYSICS_CONFIG.PUMP_HEIGHT - 5, 2);
+    this.pumpGraphics.fillRoundedRect(-halfW + 2, -halfH + 2, 12, 10, 1);
 
-    // 3. Viền sáng khối 3D
-    this.pumpGraphics.lineStyle(1, 0xfdba74, 1);
-    this.pumpGraphics.strokeRoundedRect(-halfW + 1, -halfH + 2, PHYSICS_CONFIG.PUMP_WIDTH - 2, PHYSICS_CONFIG.PUMP_HEIGHT - 5, 2);
-
-    // 4. Biểu tượng mũi tên bung nở / chữ 'I' màu vàng sáng
+    // 6. Biểu tượng mũi tên bung nở màu vàng sáng
     this.pumpGraphics.fillStyle(0xfef08a, 1);
     // Vạch đứng
-    this.pumpGraphics.fillRect(-1.5, -3, 3, 7);
+    this.pumpGraphics.fillRect(-1.5, -2, 3, 5);
     // Chóp nhọn hướng lên
-    this.pumpGraphics.fillTriangle(0, -halfH + 4, -3, -1, 3, -1);
+    this.pumpGraphics.fillTriangle(0, -6, -3.5, -1, 3.5, -1);
   }
 
   /**
-   * Kiểm tra va chạm giữa bóng tròn và AABB của ô bơm
+   * Kiểm tra va chạm giữa bóng tròn và AABB của ô bơm (có dung sai khi đứng trên bệ)
    */
   public checkCollision(bx: number, by: number, br: number): boolean {
     const halfW = PHYSICS_CONFIG.PUMP_WIDTH / 2;
@@ -68,7 +78,8 @@ export class Pump extends Phaser.GameObjects.Container {
 
     const dx = bx - closestX;
     const dy = by - closestY;
-    return dx * dx + dy * dy <= br * br;
+    const effectiveRadius = br + 1.5;
+    return dx * dx + dy * dy <= effectiveRadius * effectiveRadius;
   }
 
   /**

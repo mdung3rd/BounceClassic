@@ -15,7 +15,7 @@ export const PHYSICS_CONFIG = {
   BALL_RADIUS_SMALL: 6,       // Bán kính quả bóng nhỏ (px)
   GRAVITY_SMALL: 750,         // Trọng lực dạng nhỏ (px/s^2)
   BOUNCE_VELOCITY_SMALL: 270, // Vận tốc nảy bình thường (px/s)
-  JUMP_VELOCITY_SMALL: 280,   // Vận tốc bật nhảy dạng nhỏ (px/s, nhảy cao ~3.26 ô)
+  JUMP_VELOCITY_SMALL: 320,   // Vận tốc bật nhảy dạng nhỏ (px/s, nhảy cao ~4.1 ô / 65.6px)
   MAX_FALL_SPEED_SMALL: 800,  // Vận tốc rơi tối đa dạng nhỏ (px/s)
   MOVE_ACCEL_SMALL: 360,      // Gia tốc di chuyển ngang dạng nhỏ (px/s^2)
   MAX_MOVE_SPEED_SMALL: 90,   // Vận tốc ngang tối đa dạng nhỏ (px/s)
@@ -37,7 +37,7 @@ export const PHYSICS_CONFIG = {
   INITIAL_BALL_Y: 200,
   GRAVITY: 750,
   BOUNCE_VELOCITY: 270,
-  JUMP_VELOCITY: 280,
+  JUMP_VELOCITY: 320,
   MAX_FALL_SPEED: 800,
   MOVE_ACCEL: 360,
   MAX_MOVE_SPEED: 90,
@@ -46,7 +46,7 @@ export const PHYSICS_CONFIG = {
   // Thông số vật lý trong nước ('~')
   WATER_GRAVITY_SMALL: 130,        // Bóng nhỏ trong nước: chìm chậm (px/s^2)
   WATER_MAX_FALL_SPEED_SMALL: 70,  // Vận tốc chìm tối đa của bóng nhỏ (px/s)
-  WATER_JUMP_VELOCITY_SMALL: 160,  // Vận tốc quẫy/nhảy trong nước của bóng nhỏ (px/s)
+  WATER_JUMP_VELOCITY_SMALL: 96,   // Vận tốc quẫy/nhảy trong nước của bóng nhỏ (px/s, nhảy cao ~2.1 ô / 34.6px)
   WATER_MAX_MOVE_SPEED_SMALL: 50,  // Vận tốc ngang tối đa trong nước (px/s)
   WATER_MOVE_ACCEL_SMALL: 220,     // Gia tốc ngang trong nước (px/s^2)
   WATER_MOVE_DRAG_SMALL: 280,      // Lực cản nước ngang (px/s^2)
@@ -70,11 +70,11 @@ export const PHYSICS_CONFIG = {
   ENEMY_RADIUS: 7,             // Bán kính va chạm của kẻ địch (px)
   ENEMY_SPIKE_LENGTH: 3,       // Chiều dài gai nhọn bên ngoài (px)
 
-  // Kích thước va chạm của bơm phồng ('I') và xì xẹp ('D')
-  PUMP_WIDTH: 14,              // Chiều rộng ô bơm phồng (px)
-  PUMP_HEIGHT: 14,             // Chiều cao ô bơm phồng (px)
-  DEFLATER_WIDTH: 14,          // Chiều rộng ô xì xẹp (px)
-  DEFLATER_HEIGHT: 14,         // Chiều cao ô xì xẹp (px)
+  // Kích thước va chạm của bơm phồng ('I') và xì xẹp ('D') - bục gạch kiên cố 16x16px
+  PUMP_WIDTH: 16,              // Chiều rộng ô bơm phồng (px)
+  PUMP_HEIGHT: 16,             // Chiều cao ô bơm phồng (px)
+  DEFLATER_WIDTH: 16,          // Chiều rộng ô xì xẹp (px)
+  DEFLATER_HEIGHT: 16,         // Chiều cao ô xì xẹp (px)
 
   // Dung sai va chạm góc và mép ô (px)
   COLLISION_EPSILON: 0.05,
